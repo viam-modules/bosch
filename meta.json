@@ -1,18 +1,18 @@
 {
-    "module_id": "NAMESPACE:MODULE",
+    "module_id": "viam:bosch",
     "visibility": "public",
-    "url": "https://github.com/viam-modules/MODULE",
-    "description": "Go module for MODULE MODEL COMPONENT, compatible with Viam",
+    "url": "https://github.com/viam-modules/bosch",
+    "description": "Go module for bosch bme280 sensor, compatible with Viam",
     "models": [
       {
-        "api": "rdk:component:COMPONENT",
-        "model": "NAMESPACE:MODULE:MODEL"
+        "api": "rdk:component:sensor",
+        "model": "viam:bosch:bme280"
       }
     ],
     "build": {
       "build": "make module",
       "path": "bin/module.tar.gz",
-      "arch" : ["linux/arm64", "linux/amd64", "darwin/arm64"]
+      "arch" : ["linux/arm64", "linux/amd64"]
     },
-    "entrypoint": "bin/MODEL"
+    "entrypoint": "bin/bosch"
   }
