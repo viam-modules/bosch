@@ -19,6 +19,7 @@ import (
 	"go.viam.com/rdk/resource"
 )
 
+// Model for viam supported bosch bme 280 sensor.
 var Model = resource.NewModel("viam", "bosch", "bme280")
 
 const (

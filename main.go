@@ -2,9 +2,8 @@
 package main
 
 import (
-	"context"
-
 	"bosch/bme280"
+	"context"
 
 	"go.viam.com/rdk/components/sensor"
 	"go.viam.com/rdk/logging"
@@ -17,7 +16,7 @@ func main() {
 }
 
 func mainWithArgs(ctx context.Context, args []string, logger logging.Logger) error {
-	module, err := module.NewModuleFromArgs(ctx, logger)
+	module, err := module.NewModuleFromArgs(ctx)
 	if err != nil {
 		return err
 	}

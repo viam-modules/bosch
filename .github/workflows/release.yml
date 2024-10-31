@@ -6,20 +6,6 @@ concurrency:
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
-
-jobs:
-  test:
-    uses: ./.github/workflows/test.yml
-
-name: Build and Publish Stable
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-
-on:
-  push:
-    tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 # To test workflow updates you need to work in a branch directly on viamrobotics/viam-cartographer
@@ -30,36 +16,20 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  slack-workflow-status:
-    if: ${{ failure() }}
-    name: Post Workflow Status To Slack
-    needs:
-      - test
-    runs-on: ubuntu-latest
-    permissions:
-      actions: 'read'
-
-name: Build & Publish Module to Registry
-
-on:
-  release:
-    types: [published]
-
-jobs:
   publish:
     strategy:
       matrix:
         include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            target_os: linux
-            target_arch: amd64
-          - platform: linux/arm64
-            runner: buildjet-8vcpu-ubuntu-2204-arm
-            target_os: linux
-            target_arch: arm64
+          - arch: ubuntu-latest
+            image: ghcr.io/viamrobotics/rdk-devenv:amd64-cache
+            platform: linux/amd64
+            label: amd64
+          - arch: ubuntu-small-arm
+            image: ghcr.io/viamrobotics/rdk-devenv:arm64-cache
+            platform: linux/arm64
+            label: arm64
 
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.arch }}
 
     steps:
     - uses: actions/checkout@v3
@@ -67,7 +37,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.21.13
+        go-version: 1.23
 
     - name: Install canon
       run: |
@@ -77,7 +47,7 @@ jobs:
     - name: Build and package
       run: |
         canon --profile bosch
-        TARGET_OS=${{ matrix.target_os }} TARGET_ARCH=${{ matrix.target_arch }} make module
+        TARGET_OS=${{ matrix.platform }} TARGET_ARCH=${{ matrix.arch }} make module
 
     - name: Upload bosch module to registry
       uses: viamrobotics/upload-module@main
