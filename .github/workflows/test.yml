@@ -6,33 +6,28 @@ on:
 
 jobs:
   build_and_test:
-    name: Build and Test Cartographer
+    name: Build and Test
     strategy:
       matrix:
         include:
-          - arch: buildjet-8vcpu-ubuntu-2204
-            image: ghcr.io/viamrobotics/rdk-devenv:amd64-cache
-            platform: amd64
-          - arch: buildjet-8vcpu-ubuntu-2204-arm
-            image: ghcr.io/viamrobotics/rdk-devenv:arm64-cache
-            platform: arm64
+          - platform: linux/amd64
+            runner: ubuntu-latest
+            target_os: linux
+            target_arch: amd64
+          - platform: linux/arm64
+            runner: buildjet-8vcpu-ubuntu-2204-arm
+            target_os: linux
+            target_arch: arm64
     runs-on: ${{ matrix.arch }}
     container:
       image: ${{ matrix.image }}
       options: --platform ${{ matrix.platform }}
     timeout-minutes: 45
     steps:
-    # Now that viam-cartographer is public, can't directly comment without token having full read/write access
-    # appimage-comment.yml will trigger separately and post the actual comments
 
     - name: Set PR Number variable
       run: |
         echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> pr.env
-
-    - name: Set appimage variable
-      if: contains(github.event.pull_request.labels.*.name, 'appimage') || contains(github.event.pull_request.labels.*.name, 'appimage-ignore-tests')
-      run: |
-        echo "APPIMAGE=true" >> pr.env
 
     - name: Upload PR variables
       uses: actions/upload-artifact@v3
@@ -73,26 +68,14 @@ jobs:
             exit 1
         fi
 
-    - name: make setup
-      run: |
-        sudo -u testbot bash -lc 'make setup'
-
     - name: make build
       run: |
         sudo -u testbot bash -lc 'make build'
 
     - name: make install
       run: |
-        sudo -u testbot bash -lc 'make install'
+        sudo -u testbot bash -lc 'make tool-install'
 
     - name: make test
       run: |
         sudo -u testbot bash -lc 'make test'
-
-    - name: make setup-cpp-debug test-cpp-valgrind
-      # Currently we only run valgrind on arm64 as x86
-      # doesn't valgrind clean due to what appears to be a bug in GLOG
-      # https://github.com/viam-modules/viam-cartographer/actions/runs/5156238014/jobs/9287413446
-      if: matrix.platform != 'amd64'
-      run: |
-        sudo -u testbot bash -lc 'make setup-cpp-debug && make test-cpp-valgrind'

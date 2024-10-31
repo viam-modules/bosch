@@ -15,7 +15,7 @@ jobs:
     if: github.repository_owner == 'viam-modules'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/viamrobotics/rdk-devenv:amd64-cache
+      image: ghcr.io/viamrobotics/rdk-devenv:amd64
     timeout-minutes: 10
 
     steps:
@@ -25,9 +25,7 @@ jobs:
       id: gobump
       run: |
         sudo chown -R testbot .
-        sudo -u testbot bash -lc 'go get go.viam.com/rdk'
-        sudo -u testbot bash -lc 'go get go.viam.com/api'
-        sudo -u testbot bash -lc 'go mod tidy'
+        sudo -u testbot bash -lc 'go get -u .'
         GEN_DIFF=$(git status -s)
         
         if [ -n "$GEN_DIFF" ]; then
@@ -43,22 +41,3 @@ jobs:
           base: main
           title: Automated Go Dependencies Update
           body: This is an auto-generated PR to update go dependencies. Please confirm tests are passing before merging.
-          reviewers: JohnN193
-          draft: true
-
-  slack-workflow-status:
-      if: ${{ failure() }} 
-      name: Post Workflow Status To Slack
-      needs:
-        - bump-versions
-      runs-on: ubuntu-latest
-      permissions:
-        actions: 'read'
-      steps:
-        - name: Slack Workflow Notification
-          uses: Gamesight/slack-workflow-status@master
-          with:
-            repo_token: ${{secrets.GITHUB_TOKEN}}
-            slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
-            channel: '#team-slam-github-notifs'
-            name: 'Workflow Status'

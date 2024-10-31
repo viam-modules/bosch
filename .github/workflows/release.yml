@@ -12,15 +12,6 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  appimage:
-    uses: ./.github/workflows/appimage.yml
-    needs: test
-    with:
-      release_type: 'rc'
-    secrets:
-      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
 name: Build and Publish Stable
 
 concurrency:
@@ -39,116 +30,61 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  appimage:
-  # remove
-    uses: ./.github/workflows/appimage.yml
-    needs: test
-    with:
-      release_type: 'stable'
-    secrets:
-      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
   slack-workflow-status:
     if: ${{ failure() }}
     name: Post Workflow Status To Slack
     needs:
       - test
-      - appimage
     runs-on: ubuntu-latest
     permissions:
       actions: 'read'
-    steps:
-      - name: Slack Workflow Notification
-        uses: Gamesight/slack-workflow-status@master
-        with:
-          repo_token: ${{secrets.GITHUB_TOKEN}}
-          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
-          channel: '#bucket-canary'
-          name: 'Workflow Status'
 
-name: Deploy Bosch BME280 Module to Registry
-
-concurrency: 
-  group: ${{ github.workflow }}-${{ github.ref }}
+name: Build & Publish Module to Registry
 
 on:
-  workflow_dispatch:
   release:
-    types: [released]
-
-env:
-  VERSION: ${{ github.ref_name }}
+    types: [published]
 
 jobs:
-  appimage:
-    name: AppImage Build and Upload Cartographer to Registry
+  publish:
     strategy:
-      fail-fast: false
       matrix:
         include:
-          - arch: buildjet-8vcpu-ubuntu-2204
-            image: ghcr.io/viamrobotics/rdk-devenv:amd64-cache
-            platform: amd64
-          - arch: buildjet-8vcpu-ubuntu-2204-arm
-            image: ghcr.io/viamrobotics/rdk-devenv:arm64-cache
-            platform: arm64
-    runs-on: ${{ matrix.arch }}
-    container:
-      image: ${{ matrix.image }}
-      options: --platform linux/${{ matrix.platform }}
-    timeout-minutes: 45
+          - platform: linux/amd64
+            runner: ubuntu-latest
+            target_os: linux
+            target_arch: amd64
+          - platform: linux/arm64
+            runner: buildjet-8vcpu-ubuntu-2204-arm
+            target_os: linux
+            target_arch: arm64
 
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
+    runs-on: ${{ matrix.runner }}
 
-    - name: apt update
-      run: |
-        sudo apt update
-
-    - name: Clean and Fix Permissions
-      run: |
-        chown -R testbot:testbot .
-        sudo -u testbot bash -lc 'make clean'
-        
-    - name: make setup
-      run: |
-        sudo -u testbot bash -lc 'make setup'
-
-    - name: Build appimage
-      run: |
-        sudo -u testbot bash -lc 'make BUILD_CHANNEL="${{ github.ref_name }}" appimage'
-
-    - name: Bundle module
-      run: |
-        cp etc/packaging/appimages/deploy/cartographer-module-*.AppImage cartographer-module.AppImage
-        tar czf module.tar.gz cartographer-module.AppImage
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: appimage-${{ matrix.platform }}
-        path: module.tar.gz
-
-  upload:
-    needs: appimage
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [amd64, arm64]
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
       with:
-        name: appimage-${{ matrix.platform }}
-    - id: stripped-version
-      run: echo version=${VERSION#v} >> $GITHUB_OUTPUT
-    - uses: viamrobotics/upload-module@main
-      if: github.event_name == 'release' && !contains(github.ref_name, 'rc')
+        go-version: 1.21.13
+
+    - name: Install canon
+      run: |
+        export PATH="$(go env GOPATH)/bin:$PATH"
+        go install github.com/viamrobotics/canon@v1.0.0
+
+    - name: Build and package
+      run: |
+        canon --profile bosch
+        TARGET_OS=${{ matrix.target_os }} TARGET_ARCH=${{ matrix.target_arch }} make module
+
+    - name: Upload bosch module to registry
+      uses: viamrobotics/upload-module@main
       with:
-        platform: linux/${{ matrix.platform }}
-        version: ${{ steps.stripped-version.outputs.version }}
+        meta-path: meta.json
+        module-path: module.tar.gz
+        platform: ${{ matrix.platform }}
+        version: ${{ github.ref_name }}
         key-id: ${{ secrets.VIAM_DEV_API_KEY_ID }}
         key-value: ${{ secrets.VIAM_DEV_API_KEY }}

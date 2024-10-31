@@ -13,30 +13,3 @@ on:
 jobs:
   test:
     uses: ./.github/workflows/test.yml
-
-  appimage:
-    uses: ./.github/workflows/appimage.yml
-    needs: test
-    with:
-      release_type: 'latest'
-    secrets:
-      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
-  slack-workflow-status:
-      if: ${{ failure() }} 
-      name: Post Workflow Status To Slack
-      needs:
-        - appimage
-        - test
-      runs-on: ubuntu-latest
-      permissions:
-        actions: 'read'
-      steps:
-        - name: Slack Workflow Notification
-          uses: Gamesight/slack-workflow-status@master
-          with:
-            repo_token: ${{secrets.GITHUB_TOKEN}}
-            slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
-            channel: '#team-slam-github-notifs'
-            name: 'Workflow Status'
