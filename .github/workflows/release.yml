@@ -49,7 +49,7 @@ jobs:
       uses: viamrobotics/upload-module@main
       with:
         meta-path: meta.json
-        module-path: module.tar.gz
+        module-path: bin/module.tar.gz
         platform: ${{ matrix.platform }}
         version: ${{ github.ref_name }}
         key-id: ${{ secrets.VIAM_DEV_API_KEY_ID }}
