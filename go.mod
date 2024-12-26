@@ -1,4 +1,4 @@
-module bosch
+module github.com/viam-modules/bosch
 
 go 1.23
 
