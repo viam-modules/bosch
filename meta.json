@@ -7,7 +7,9 @@
   "models": [
     {
       "api": "rdk:component:sensor",
-      "model": "viam:bosch:bme280"
+      "model": "viam:bosch:bme280",
+      "markdown_link": "README.md#configure-your-bme280-sensor",
+      "short_description": "sensor model for the bosch BME280 environmental sensor"
     }
   ],
   "build": {
