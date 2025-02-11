@@ -28,7 +28,7 @@ The following attributes are available for `viam:bosch:bme280` sensors:
 | `i2c_bus` | string | **Required** | The index of the I2C bus on the board that the sensor is wired to. |
 | `i2c_address` | string | Optional | Default: `0x77`. The [I2C device address](https://learn.adafruit.com/i2c-addresses/overview) of the sensor. |
 
-### Example configuratiosn
+### Example Configuration
 
 ```json
   {
