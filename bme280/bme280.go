@@ -125,6 +125,7 @@ func newSensor(
 	conf *Config,
 	logger logging.Logger,
 ) (sensor.Sensor, error) {
+	logger.CInfof(ctx, "Creating new i2c bus on bus number '%s'", conf.I2CBus)
 	i2cbus, err := buses.NewI2cBus(conf.I2CBus)
 	if err != nil {
 		return nil, fmt.Errorf("bme280 init: failed to open i2c bus %s: %w",
@@ -134,7 +135,7 @@ func newSensor(
 	addr := conf.I2cAddr
 	if addr == 0 {
 		addr = defaultI2Caddr
-		logger.CWarn(ctx, "using i2c address : 0x77")
+		logger.CWarnf(ctx, "Using default i2c address: %#x", addr)
 	}
 
 	s := &bme280{
@@ -145,6 +146,7 @@ func newSensor(
 		lastTemp: -999, // initialize to impossible temp
 	}
 
+	logger.CInfof(ctx, "Connecting to i2c bus %v on addr %#x", conf.I2CBus, addr)
 	err = s.reset(ctx)
 	if err != nil {
 		return nil, err
@@ -188,6 +190,7 @@ func newSensor(
 		return nil, err
 	}
 
+	logger.CInfof(ctx, "Successfully created i2c sensor on bus %v addr %#x", conf.I2CBus, addr)
 	return s, nil
 }
 
@@ -208,7 +211,7 @@ type bme280 struct {
 func (s *bme280) Readings(ctx context.Context, extra map[string]interface{}) (map[string]interface{}, error) {
 	handle, err := s.bus.OpenHandle(s.addr)
 	if err != nil {
-		s.logger.CErrorf(ctx, "can't open bme280 i2c %s", err)
+		s.logger.CErrorf(ctx, "can't open bme280 i2c on addr %#x: %s", s.addr, err)
 		return nil, err
 	}
 	err = handle.Write(ctx, []byte{byte(bme280MeasurementsReg)})
@@ -463,6 +466,7 @@ func (s *bme280) setOverSample(ctx context.Context, addr, offset, val byte) erro
 
 // setupCalibration sets up all calibration data for the chip.
 func (s *bme280) setupCalibration(ctx context.Context) error {
+	s.logger.CDebugf(ctx, "Setting up i2c calibration on addr %#x", s.addr)
 	handle, err := s.bus.OpenHandle(s.addr)
 	if err != nil {
 		return err
