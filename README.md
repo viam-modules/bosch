@@ -1,6 +1,9 @@
 # [`bosch` module](https://github.com/viam-modules/bosch)
 
-This [bosch module](https://app.viam.com/module/viam/bosch) implements a bosch [BME280 environmental sensor](https://www.adafruit.com/product/2652), used for sensing temperature, humidity, and barometric pressure using the [`rdk:component:sensor` API](https://docs.viam.com/appendix/apis/components/sensor/).
+This [bosch module](https://app.viam.com/module/viam/bosch) implements a
+bosch [BME280 environmental sensor](https://www.adafruit.com/product/2652), used for sensing
+temperature, humidity, and barometric pressure using the [
+`rdk:component:sensor` API](https://docs.viam.com/appendix/apis/components/sensor/).
 
 > [!NOTE]
 > Before configuring your sensor, you must [create a machine](https://docs.viam.com/cloud/machines/#add-a-new-machine).
@@ -23,9 +26,9 @@ For most BME280 sensors, copy and paste the following attribute template into yo
 
 The following attributes are available for `viam:bosch:bme280` sensors:
 
-| Name | Type   | Inclusion    | Default              | Description |
-| --------- |--------|--------------|----------------------| ----------  |
-| `i2c_bus` | string | **Required** | -                    | The index of the I2C bus on the board that the sensor is wired to. |
+| Name       | Type   | Inclusion    | Default              | Description                                                                                |
+|------------|--------|--------------|----------------------|--------------------------------------------------------------------------------------------|
+| `i2c_bus`  | string | **Required** | -                    | The index of the I2C bus on the board that the sensor is wired to.                         |
 | `i2c_addr` | int    | Optional     | 119 (or 0x77 as hex) | The [I2C device address](https://learn.adafruit.com/i2c-addresses/overview) of the sensor. |
 
 ### Example Readings Sample
