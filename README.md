@@ -1,6 +1,9 @@
 # [`bosch` module](https://github.com/viam-modules/bosch)
 
-This [bosch module](https://app.viam.com/module/viam/bosch) implements a bosch [BME280 environmental sensor](https://www.adafruit.com/product/2652), used for sensing temperature, humidity, and barometric pressure using the [`rdk:component:sensor` API](https://docs.viam.com/appendix/apis/components/sensor/).
+This [bosch module](https://app.viam.com/module/viam/bosch) implements a
+bosch [BME280 environmental sensor](https://www.adafruit.com/product/2652), used for sensing
+temperature, humidity, and barometric pressure using the [
+`rdk:component:sensor` API](https://docs.viam.com/appendix/apis/components/sensor/).
 
 > [!NOTE]
 > Before configuring your sensor, you must [create a machine](https://docs.viam.com/cloud/machines/#add-a-new-machine).
@@ -10,12 +13,12 @@ Navigate to the [**CONFIGURE** tab](https://docs.viam.com/configure/) of your [m
 
 ## Configure your bme280 sensor
 
-On the new component panel, copy and paste the following attribute template into your sensors’s attributes field:
+For most BME280 sensors, copy and paste the following attribute template into your sensors’s attributes field on the new component panel:
 
 ```json
 {
-  "i2c_bus": "<your-i2c-bus-index-on-board>",
-  "i2c_address": "<your-i2c-address>"
+  "i2c_bus": "1",
+  "i2c_addr": 119
 }
 ```
 
@@ -23,18 +26,22 @@ On the new component panel, copy and paste the following attribute template into
 
 The following attributes are available for `viam:bosch:bme280` sensors:
 
-| Attribute | Type | Required? | Description |
-| --------- | ---- | --------- | ----------  |
-| `i2c_bus` | string | **Required** | The index of the I2C bus on the board that the sensor is wired to. |
-| `i2c_address` | string | Optional | Default: `0x77`. The [I2C device address](https://learn.adafruit.com/i2c-addresses/overview) of the sensor. |
+| Name       | Type   | Inclusion    | Default              | Description                                                                                |
+|------------|--------|--------------|----------------------|--------------------------------------------------------------------------------------------|
+| `i2c_bus`  | string | **Required** | -                    | The index of the I2C bus on the board that the sensor is wired to.                         |
+| `i2c_addr` | int    | Optional     | 119 (or 0x77 as hex) | The [I2C device address](https://learn.adafruit.com/i2c-addresses/overview) of the sensor. |
 
-### Example Configuration
+### Example Readings Sample
 
 ```json
-  {
-    "i2c_bus": "<your-i2c-bus-index-on-board>",
-    "i2c_address": "<your-i2c-address>"
-  }
+{
+  "dew_point_celsius": 7.9552551384307995,
+  "dew_point_fahrenheit": 46.31945924917544,
+  "pressure_mpa": 674.6150820292188,
+  "relative_humidity_pct": 46.86546717372174,
+  "temperature_celsius": 19.598497458914327,
+  "temperature_fahrenheit": 67.2772954260458
+}
 ```
 
 ## Next Steps
