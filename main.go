@@ -5,7 +5,6 @@ import (
 	"context"
 
 	"github.com/viam-modules/bosch/bme280"
-
 	"go.viam.com/rdk/components/sensor"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/module"
