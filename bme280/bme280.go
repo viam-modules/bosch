@@ -90,12 +90,12 @@ type Config struct {
 }
 
 // Validate ensures all parts of the config are valid.
-func (conf *Config) Validate(path string) ([]string, error) {
+func (conf *Config) Validate(path string) ([]string, []string, error) {
 	var deps []string
 	if len(conf.I2CBus) == 0 {
-		return nil, resource.NewConfigValidationFieldRequiredError(path, "i2c bus")
+		return nil, nil, resource.NewConfigValidationFieldRequiredError(path, "i2c bus")
 	}
-	return deps, nil
+	return deps, nil, nil
 }
 
 func init() {
